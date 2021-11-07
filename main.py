@@ -44,7 +44,7 @@ def read_ignore_file(root, filepath):
     return result
 
 
-def walk(base_dir, ignore_file=".gitignore"):
+def walk(base_dir, ignore_file=".gitignore", list_ignored_only=False):
     ignore_list = dict()
     for root, dirs, files in os.walk(base_dir):
         pl_root = pathlib.Path(root)
@@ -82,8 +82,11 @@ def walk(base_dir, ignore_file=".gitignore"):
                 if need_break:
                     break
             if file_is_ignored:
+                if list_ignored_only:
+                    yield pl_root / file
                 continue
-            yield pl_root / file
+            if not list_ignored_only:
+                yield pl_root / file
 
 
 def test_ignore_mechanism():
@@ -106,6 +109,19 @@ def test_ignore_mechanism():
         if first:
             first = False
             print("Files ignored by Git, but reported by tool:")
+        print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+
+    tool_no_ignore_set = set(walk(
+        "test-materials/ignorefiles",
+        ignore_file=None,
+        list_ignored_only=True
+    ))
+    print("/°\\_"*10)
+    first = True
+    for f in sorted(tool_no_ignore_set):
+        if first:
+            first = False
+            print("Files ignored even if no ignore file given:")
         print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
 
     return 0

@@ -44,7 +44,10 @@ def read_ignore_file(root, filepath):
     return result
 
 
-def walk(base_dir, ignore_file=".gitignore", list_ignored_only=False):
+def walk(
+    base_dir,
+    ignore_file=".gitignore", list_ignored=False, list_ignored_only=False
+):
     ignore_list = dict()
     for root, dirs, files in os.walk(base_dir):
         pl_root = pathlib.Path(root)
@@ -82,7 +85,7 @@ def walk(base_dir, ignore_file=".gitignore", list_ignored_only=False):
                 if need_break:
                     break
             if file_is_ignored:
-                if list_ignored_only:
+                if list_ignored_only or list_ignored:
                     yield pl_root / file
                 continue
             if not list_ignored_only:
@@ -102,7 +105,10 @@ def test_ignore_mechanism():
         if line.startswith("!!"):
             git_ignore_set.add(pathlib.Path(line[2:].strip()))
 
-    tool_set = set(walk("test-materials/ignorefiles"))
+    tool_set = set(walk(
+        "test-materials/ignorefiles",
+        list_ignored=False
+    ))
     print("/°\\_"*10)
     first = True
     for f in sorted(git_ignore_set.intersection(tool_set)):
@@ -114,6 +120,7 @@ def test_ignore_mechanism():
     tool_no_ignore_set = set(walk(
         "test-materials/ignorefiles",
         ignore_file=None,
+        list_ignored=True,
         list_ignored_only=True
     ))
     print("/°\\_"*10)

@@ -68,6 +68,8 @@ def walk(
     base_dir,
     ignore_file=".gitignore", list_ignored=False, list_ignored_only=False
 ):
+    if list_ignored_only:
+        list_ignored = True
     ignore_list = dict()
     for root, dirs, files in os.walk(base_dir):
         pl_root = pathlib.Path(root)
@@ -107,7 +109,7 @@ def walk(
                 if need_break:
                     break
             if file_is_ignored:
-                if list_ignored_only or list_ignored:
+                if list_ignored:
                     yield pl_root / file
                 continue
             if not list_ignored_only:

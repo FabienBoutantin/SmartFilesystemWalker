@@ -6,6 +6,9 @@ import subprocess
 from enum import Enum
 
 
+DEBUG = 1
+
+
 class ConfigFilePolicy(Enum):
     """Policy to use while handling  configuration file.
     Possible values:
@@ -80,7 +83,8 @@ def walk(
         if ignore_file in files:
             # update ignore list
             ignore_list[root] = read_ignore_file(root, pl_root / ignore_file)
-            # print("  ", ignore_list)
+            if DEBUG:
+                print("  ", ignore_list)
         for file in sorted(files):
             if file == ignore_file:
                 continue
@@ -93,11 +97,12 @@ def walk(
                     if line_re.match(f"{root}/{file}"):
                         file_is_ignored = not is_negative
                         need_break = True
-                        print(
-                            f"{k}/{ignore_file}:{line_no}:{line}"
-                            " \t "
-                            f"{root}/{file}"
-                        )
+                        if DEBUG:
+                            print(
+                                f"{k}/{ignore_file}:{line_no}:{line}"
+                                " \t "
+                                f"{root}/{file}"
+                            )
                         break
                 if need_break:
                     break

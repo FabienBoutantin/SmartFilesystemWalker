@@ -38,7 +38,9 @@ def read_ignore_file(root, filepath):
             i.replace("*", "[^/]*")
             for i in item.split("**")
         ])
-        return result + "$"
+        if result[-1] != "/":
+            result += "$"
+        return result
 
     result = list()
     with open(filepath, "rt", encoding="utf-8") as fd:
@@ -114,6 +116,30 @@ def walk(
                 continue
             if not list_ignored_only:
                 yield pl_root / file
+        if not list_ignored:
+            # need to prevent walking inside excluded directories for perf.
+            ignored_dirs = list()
+            for d in dirs:
+                for k in reversed(ignore_list):
+                    need_break = False
+                    for line_no, line, line_re, is_negative in reversed(
+                        ignore_list[k]
+                    ):
+                        if line_re.match(f"{root}/{d}/"):
+                            if not is_negative:
+                                ignored_dirs.append(d)
+                            need_break = True
+                            if DEBUG:
+                                print(
+                                    f"{k}/{ignore_file}:{line_no}:{line}"
+                                    " \t "
+                                    f"{root}/{d}/"
+                                )
+                            break
+                    if need_break:
+                        break
+            for d in ignored_dirs:
+                dirs.remove(d)
 
 
 def test_ignore_mechanism():

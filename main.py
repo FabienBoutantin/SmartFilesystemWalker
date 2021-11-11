@@ -25,23 +25,34 @@ class ConfigFilePolicy(Enum):
     GitIgnoreLike = 16
 
 
-def read_ignore_file(root, filepath):
-    def translate(item):
-        result = "^.*/"
-        if item.startswith("**/"):
-            result = f"^{root}(|.*)/"
-            item = item[3:]
-        elif item.startswith("*/"):
-            result = f"^{root}/[^/]*/"
-            item = item[2:]
-        result += ".*".join([
-            i.replace("*", "[^/]*")
-            for i in item.split("**")
-        ])
-        if result[-1] != "/":
-            result += "$"
-        return result
+def convert_ignore_line_to_re(item, root):
+    """ Converts an ignore line directive into a compiled regex.
+    """
+    result = "^.*/"
+    if item.startswith("**/"):
+        result = f"^{root}(|.*)/"
+        item = item[3:]
+    elif item.startswith("*/"):
+        result = f"^{root}/[^/]*/"
+        item = item[2:]
+    result += ".*".join([
+        i.replace("*", "[^/]*")
+        for i in item.split("**")
+    ])
+    if result[-1] != "/":
+        result += "$"
+    return re.compile(result)
 
+
+def read_ignore_file(root, filepath):
+    """ Reads a ignore file like .gitignore.
+    Returns a list of rules according to ignore file content.
+    Each rule is a tuple composed of:
+    * line number in file
+    * original rule text
+    * compile regexp of the rule
+    * is the rule negative (starts with a '!' char)
+    """
     result = list()
     with open(filepath, "rt", encoding="utf-8") as fd:
         for line_no, orig_line in enumerate(fd, 1):
@@ -54,12 +65,11 @@ def read_ignore_file(root, filepath):
                 line = line[1:]
             else:
                 is_negative = False
-            # print(line, "==>", translate(line))
             result.append(
                 (
                     line_no,
                     orig_line.rstrip(),
-                    re.compile(translate(line)),
+                    convert_ignore_line_to_re(line, root),
                     is_negative
                 )
             )

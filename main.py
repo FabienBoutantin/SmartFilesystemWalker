@@ -76,6 +76,24 @@ def read_ignore_file(root, filepath):
     return result
 
 
+def is_ignored_item(ignore_rules, item, ignore_file):
+    """ Tells if given item must be ignored or not.
+    """
+    for k in reversed(ignore_rules):
+        for line_no, line, line_re, is_negative in reversed(
+            ignore_rules[k]
+        ):
+            if line_re.match(item):
+                if DEBUG:
+                    print(
+                        f"{k}/{ignore_file}:{line_no}:{line}"
+                        " \t "
+                        f"{item}"
+                    )
+                return not is_negative
+    return False
+
+
 def walk(
     base_dir,
     ignore_file=".gitignore", list_ignored=False, list_ignored_only=False
@@ -102,24 +120,11 @@ def walk(
         for file in sorted(files):
             if file == ignore_file:
                 continue
-            file_is_ignored = False
-            for k in reversed(ignore_list):
-                need_break = False
-                for line_no, line, line_re, is_negative in reversed(
-                    ignore_list[k]
-                ):
-                    if line_re.match(f"{root}/{file}"):
-                        file_is_ignored = not is_negative
-                        need_break = True
-                        if DEBUG:
-                            print(
-                                f"{k}/{ignore_file}:{line_no}:{line}"
-                                " \t "
-                                f"{root}/{file}"
-                            )
-                        break
-                if need_break:
-                    break
+            file_is_ignored = is_ignored_item(
+                ignore_list,
+                f"{root}/{file}",
+                ignore_file
+            )
             if file_is_ignored:
                 if list_ignored:
                     yield pl_root / file
@@ -128,26 +133,11 @@ def walk(
                 yield pl_root / file
         if not list_ignored:
             # need to prevent walking inside excluded directories for perf.
-            ignored_dirs = list()
-            for d in dirs:
-                for k in reversed(ignore_list):
-                    need_break = False
-                    for line_no, line, line_re, is_negative in reversed(
-                        ignore_list[k]
-                    ):
-                        if line_re.match(f"{root}/{d}/"):
-                            if not is_negative:
-                                ignored_dirs.append(d)
-                            need_break = True
-                            if DEBUG:
-                                print(
-                                    f"{k}/{ignore_file}:{line_no}:{line}"
-                                    " \t "
-                                    f"{root}/{d}/"
-                                )
-                            break
-                    if need_break:
-                        break
+            ignored_dirs = [
+                d
+                for d in dirs
+                if is_ignored_item(ignore_list, f"{root}/{d}/", ignore_file)
+            ]
             for d in ignored_dirs:
                 dirs.remove(d)
 

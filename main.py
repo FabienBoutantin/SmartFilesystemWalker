@@ -26,8 +26,78 @@ class ConfigFilePolicy(Enum):
 
 def convert_ignore_line_to_re(item, root):
     """ Converts an ignore line directive into a compiled regex.
+
+    >>> res = convert_ignore_line_to_re("item", "root")
+    >>> res.match("root/item") is not None
+    True
+    >>> res.match("root/item/") is not None
+    False
+    >>> res.match("root/another_directory/item") is not None
+    True
+    >>> res.match("root/another_directory/item/") is not None
+    False
+    >>> res.match("root/another/directories/item") is not None
+    True
+    >>> res.match("root/another/directories/item/") is not None
+    False
+
+    >>> res = convert_ignore_line_to_re("*.svg", "root")
+    >>> res.match("root/item.svg") is not None
+    True
+    >>> res.match("root/item.svg/") is not None
+    False
+    >>> res.match("root/itemAsvg") is not None
+    False
+    >>> res.match("root/another_directory/item.svg") is not None
+    True
+    >>> res.match("root/another/directories/item.svg") is not None
+    True
+
+    >>> res = convert_ignore_line_to_re("item/", "root")
+    >>> res.match("root/item") is not None
+    False
+    >>> res.match("root/item/") is not None
+    True
+    >>> res.match("root/another_directory/item") is not None
+    False
+    >>> res.match("root/another_directory/item/") is not None
+    True
+    >>> res.match("root/another/directories/item") is not None
+    False
+    >>> res.match("root/another/directories/item/") is not None
+    True
+
+    >>> res = convert_ignore_line_to_re("*/item", "root")
+    >>> res.match("root/item") is not None
+    False
+    >>> res.match("root/item/") is not None
+    False
+    >>> res.match("root/another_directory/item") is not None
+    True
+    >>> res.match("root/another_directory/item/") is not None
+    False
+    >>> res.match("root/another/directories/item") is not None
+    False
+    >>> res.match("root/another/directories/item/") is not None
+    False
+
+    >>> res = convert_ignore_line_to_re("**/item", "root")
+    >>> res.match("root/item") is not None
+    True
+    >>> res.match("root/item/") is not None
+    False
+    >>> res.match("root/another_directory/item") is not None
+    True
+    >>> res.match("root/another_directory/item/") is not None
+    False
+    >>> res.match("root/another/directories/item") is not None
+    True
+    >>> res.match("root/another/directories/item/") is not None
+    False
+
     """
     result = "^.*/"
+    item = item.replace(".", "\\.")
     if item.startswith("**/"):
         result = f"^{root}(|.*)/"
         item = item[3:]

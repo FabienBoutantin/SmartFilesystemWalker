@@ -54,7 +54,7 @@ def test_ignore_mechanism():
         get_test_materials_dir() / "ignorefiles",
         list_ignored=False
     ))
-    print("/°\\_"*10)
+    print("/°\\_" * 10)
     first = True
     for f in sorted(git_ignore_set.intersection(tool_set)):
         if first:
@@ -71,7 +71,7 @@ def test_ignore_mechanism2():
         list_ignored=True,
         list_ignored_only=True
     ))
-    print("/°\\_"*10)
+    print("/°\\_" * 10)
     first = True
     for f in sorted(tool_no_ignore_set):
         if first:

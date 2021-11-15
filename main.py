@@ -5,7 +5,7 @@ import re
 from enum import Enum
 
 
-DEBUG = 1
+DEBUG = 0
 
 
 class ConfigFilePolicy(Enum):
@@ -147,6 +147,17 @@ def read_ignore_file(root, filepath):
 
 def is_ignored_item(ignore_rules, item, ignore_file):
     """ Tells if given item must be ignored or not.
+
+    >>> is_ignored_item(dict(), "item", "ignore_file")
+    False
+
+    >>> rules = {"root": [(1, "item", re.compile("item"), False)]}
+    >>> is_ignored_item(rules, "item", "ignore_file")
+    True
+
+    >>> rules = {"root": [(1, "item", re.compile("item"), True)]}
+    >>> is_ignored_item(rules, "item", "ignore_file")
+    False
     """
     for k in reversed(ignore_rules):
         for line_no, line, line_re, is_negative in reversed(

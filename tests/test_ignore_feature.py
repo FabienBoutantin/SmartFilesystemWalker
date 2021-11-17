@@ -1,81 +1,122 @@
 import pathlib
 import sys
 import functools
-import subprocess
+import json
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 import main  # noqa
 
 
+################################################################################
+# Helper functions
 @functools.lru_cache
 def get_test_materials_dir():
     """Returns the path of the test-materials directory."""
     return pathlib.Path(__file__).parent / "test-materials"
 
 
-def test_simple_ignore():
-    """Tests a simple ignore file"""
-    test_materials = get_test_materials_dir() / "ignorefiles"
-    assert len(tuple(main.walk(test_materials))) == 6
+@functools.lru_cache
+def get_git_info():
+    """ Imports last git exported status
+    One may need to run this command to update file:
+    $> generate_git_info_for_ignorefiles.py
+    """
+    ignorefiles_dir = get_test_materials_dir() / "ignorefiles"
+    with open(ignorefiles_dir / "git_info_file.json", "r", encoding="utf-8") as fd:
+        return json.load(fd)
 
 
-def dtest_ignore_wildcard():
-    """Test ignoring files based on wildcards"""
-    pass
-
-
-def dtest_ignore_subdir():
-    pass
-
+################################################################################
+# Tests:
 
 def test_listing_ignore_files():
+    # Using default filename that is .gitignore
     ignored_files = tuple(main.walk(
         get_test_materials_dir() / "ignorefiles",
         list_ignored_only=True
     ))
+    # No .gitignore file, hence no ignored files
+    assert len(ignored_files) == 0
+
+    ignored_files = tuple(main.walk(
+        get_test_materials_dir() / "ignorefiles",
+        ignore_file="gitignore",
+        list_ignored_only=True
+    ))
+    # THere should be more than 1 ignored file
     assert len(ignored_files)
 
 
 def test_ignore_mechanism():
-    git_ignore_set = set()
-    # Need to investigate if it is working with committed files:
-    # may be this command can be more useful:
-    # git check-ignore test-materials/ignorefiles/subdir1/* -v
-    output = subprocess.check_output(
-        ["git", "status", "--ignored", "--porcelain"]
+    ignorefiles_dir = get_test_materials_dir() / "ignorefiles"
+    git_ignore_set = set(
+        map(
+            lambda f: ignorefiles_dir / f,
+            filter(
+                lambda x: not x.endswith("gitignore"),
+                get_git_info()["ignored"]
+            )
+        )
     )
-    for line in output.splitlines():
-        line = line.decode("utf-8")
-        if line.startswith("!!"):
-            git_ignore_set.add(pathlib.Path(line[2:].strip()))
 
-    tool_set = set(main.walk(
-        get_test_materials_dir() / "ignorefiles",
-        list_ignored=False
-    ))
-    print("/°\\_" * 10)
+    tool_set = set(
+        map(
+            lambda f: ignorefiles_dir / f,
+            main.walk(
+                ignorefiles_dir,
+                ignore_file="gitignore",
+                list_ignored=False
+            )
+        )
+    )
+
     first = True
-    for f in sorted(git_ignore_set.intersection(tool_set)):
+    for f in sorted(tool_set.intersection(git_ignore_set)):
         if first:
             first = False
             print("Files ignored by Git, but reported by tool:")
         print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+    if not first:
+        print("Reported files by tool:")
+        for f in sorted(tool_set):
+            print(f)
     assert first
 
 
-def test_ignore_mechanism2():
-    tool_no_ignore_set = set(main.walk(
-        get_test_materials_dir() / "ignorefiles",
-        ignore_file=None,
-        list_ignored=True,
-        list_ignored_only=True
-    ))
-    print("/°\\_" * 10)
+def test_ignored_files():
+    ignorefiles_dir = get_test_materials_dir() / "ignorefiles"
+    git_to_track_set = set(
+        map(
+            lambda f: ignorefiles_dir / f,
+            filter(
+                lambda x: not x.endswith("gitignore"),
+                get_git_info()["to_track"]
+            )
+        )
+    )
+
+    tool_set = set(
+        map(
+            lambda f: ignorefiles_dir / f,
+            main.walk(
+                ignorefiles_dir,
+                ignore_file="gitignore",
+                list_ignored=False
+            )
+        )
+    )
     first = True
-    for f in sorted(tool_no_ignore_set):
+    for f in sorted(git_to_track_set.difference(tool_set)):
         if first:
             first = False
-            print("Files ignored even if no ignore file given:")
+            print("Files tracked by Git, but not reported by tool:")
+        print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+    assert first
+    first = True
+    for f in sorted(tool_set.difference(git_to_track_set)):
+        if first:
+            first = False
+            print("Files reported by tool, but not tracked by git:")
         print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
     assert first

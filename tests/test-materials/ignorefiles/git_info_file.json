@@ -1,0 +1,41 @@
+{
+  "ignored": [
+    "fileA",
+    "fileB",
+    "fileD",
+    "subdir1/fileB",
+    "subdir1/fileC",
+    "subdir1/fileD",
+    "subdir1/subdir1.1/fileB",
+    "subdir1/subdir1.1/fileD",
+    "subdir2/subdir2.1/fileA",
+    "subdir2/subdir2.1/fileB",
+    "subdir2/subdir2.1/fileD",
+    "subdir3/fileA",
+    "subdir3/fileB",
+    "subdir3/fileC",
+    "subdir3/fileD",
+    "subdir3/subdir1.1/fileA",
+    "subdir3/subdir1.1/fileB",
+    "subdir3/subdir1.1/fileD"
+  ],
+  "to_track": [
+    ".gitignore",
+    "fileC",
+    "git_info_file.json",
+    "gitignore",
+    "subdir1/.gitignore",
+    "subdir1/fileA",
+    "subdir1/gitignore",
+    "subdir1/subdir1.1/fileA",
+    "subdir1/subdir1.1/fileC",
+    "subdir2/.gitignore",
+    "subdir2/fileA",
+    "subdir2/fileB",
+    "subdir2/fileC",
+    "subdir2/fileD",
+    "subdir2/gitignore",
+    "subdir2/subdir2.1/fileC",
+    "subdir3/subdir1.1/fileC"
+  ]
+}

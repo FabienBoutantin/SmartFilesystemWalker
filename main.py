@@ -95,21 +95,40 @@ def convert_ignore_line_to_re(item, root):
     >>> res.match("root/another/directories/item/") is not None
     False
 
+    >>> res = convert_ignore_line_to_re("/item", "root")
+    >>> res.match("root/item") is not None
+    True
+    >>> res.match("root/item/") is not None
+    False
+    >>> res.match("root/another_directory/item") is not None
+    False
+    >>> res.match("root/another_directory/item/") is not None
+    False
+    >>> res.match("root/another/directories/item") is not None
+    False
+    >>> res.match("root/another/directories/item/") is not None
+    False
+
     """
+    tmp_item = item.replace(".", "\\.").replace("?", ".")
     result = "^.*/"
-    item = item.replace(".", "\\.")
-    if item.startswith("**/"):
+    if tmp_item.startswith("**/"):
         result = f"^{root}(|.*)/"
-        item = item[3:]
-    elif item.startswith("*/"):
+        tmp_item = tmp_item[3:]
+    elif tmp_item.startswith("*/"):
         result = f"^{root}/[^/]*/"
-        item = item[2:]
+        tmp_item = tmp_item[2:]
+    elif tmp_item.startswith("/"):
+        result = f"^{root}/"
+        tmp_item = tmp_item[1:]
     result += ".*".join([
         i.replace("*", "[^/]*")
-        for i in item.split("**")
+        for i in tmp_item.split("**")
     ])
     if result[-1] != "/":
         result += "$"
+    if DEBUG:
+        print(f"Converted '{item}' into this RegEx '{result}'")
     return re.compile(result)
 
 

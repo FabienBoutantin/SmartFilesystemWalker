@@ -109,8 +109,35 @@ def convert_ignore_line_to_re(item, root):
     >>> res.match("root/another/directories/item/") is not None
     False
 
+    >>> res = convert_ignore_line_to_re("/item[AB]", "root")
+    >>> res.match("root/itemA") is not None
+    True
+    >>> res.match("root/itemB") is not None
+    True
+    >>> res.match("root/itemC") is not None
+    False
+
+    >>> res = convert_ignore_line_to_re("/item[A-D]", "root")
+    >>> res.match("root/itemA") is not None
+    True
+    >>> res.match("root/itemB") is not None
+    True
+    >>> res.match("root/itemC") is not None
+    True
+    >>> res.match("root/itemD") is not None
+    True
+    >>> res.match("root/itemE") is not None
+    False
+
+    >>> res = convert_ignore_line_to_re("/item[!AB]", "root")
+    >>> res.match("root/itemA") is not None
+    False
+    >>> res.match("root/itemB") is not None
+    False
+    >>> res.match("root/itemC") is not None
+    True
     """
-    tmp_item = item.replace(".", "\\.").replace("?", ".")
+    tmp_item = item.replace(".", "\\.").replace("?", ".").replace("[!", "[^")
     result = "^.*/"
     if tmp_item.startswith("**/"):
         result = f"^{root}(|.*)/"

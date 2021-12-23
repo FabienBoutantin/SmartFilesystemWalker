@@ -1,0 +1,9 @@
+[report]
+exclude_lines = 
+    # Do not complain about debug code
+    if DEBUG:
+
+    # Do not report for non module execution
+    if __name__ == "__main__": 
+
+omit = tests/generate_git_info_for_ignorefiles.py

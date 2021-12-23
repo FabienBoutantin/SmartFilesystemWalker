@@ -3,9 +3,9 @@ import sys
 import functools
 import json
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent))
 
-import main  # noqa
+import SmartFilesystemWalker  # noqa
 
 
 ################################################################################
@@ -32,14 +32,14 @@ def get_git_info():
 
 def test_listing_ignore_files():
     # Using default filename that is .gitignore
-    ignored_files = tuple(main.walk(
+    ignored_files = tuple(SmartFilesystemWalker.walk(
         get_test_materials_dir() / "ignorefiles",
         list_ignored_only=True
     ))
     # No .gitignore file, hence no ignored files
     assert len(ignored_files) == 0
 
-    ignored_files = tuple(main.walk(
+    ignored_files = tuple(SmartFilesystemWalker.walk(
         get_test_materials_dir() / "ignorefiles",
         ignore_file="gitignore",
         list_ignored_only=True
@@ -63,7 +63,7 @@ def test_ignore_mechanism():
     tool_set = set(
         map(
             lambda f: ignorefiles_dir / f,
-            main.walk(
+            SmartFilesystemWalker.walk(
                 ignorefiles_dir,
                 ignore_file="gitignore",
                 list_ignored=False
@@ -99,7 +99,7 @@ def test_ignored_files():
     tool_set = set(
         map(
             lambda f: ignorefiles_dir / f,
-            main.walk(
+            SmartFilesystemWalker.walk(
                 ignorefiles_dir,
                 ignore_file="gitignore",
                 list_ignored=False

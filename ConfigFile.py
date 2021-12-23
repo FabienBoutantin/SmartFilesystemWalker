@@ -30,6 +30,18 @@ def handle_config_file(base_content: Union[str, dict], new_content: Union[str, d
 
     Returns:
         Union[str, dict]: [description]
+
+    >>> handle_config_file("a=12", "b=3", Policy["Override"])
+    'b=3'
+
+    >>> handle_config_file("a=12", "b=3", Policy["Concatenate"]).splitlines()
+    ['a=12', 'b=3']
+
+    >>> handle_config_file({'a': 12, 'b': 12}, {'b': 3, 'c': 4}, Policy["DictBased"])
+    {'a': 12, 'b': 3, 'c': 4}
+
+    >>> handle_config_file({'a': 12, 'b': 12}, {'b': 3, 'c': 4}, Policy["AppendDictBased"])
+    {'a': 12, 'b': 12, 'c': 4}
     """
     if policy == Policy["Override"]:
         return new_content
@@ -40,8 +52,11 @@ def handle_config_file(base_content: Union[str, dict], new_content: Union[str, d
         result.update(new_content)
         return result
     elif policy == Policy["AppendDictBased"]:
-        result = dict(new_content)
-        result.update(base_content)
+        result = dict(base_content)
+        for k in new_content:
+            if k in result:
+                continue
+            result[k] = new_content[k]
         return result
     elif policy == Policy["GitIgnoreLike"]:
         raise NotImplementedError("To Be Copied from main code")

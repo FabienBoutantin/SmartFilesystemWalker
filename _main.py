@@ -2,26 +2,10 @@
 import os
 import pathlib
 import re
-from enum import Enum
+from enum import Enum  # noqa: F401
 
 
 DEBUG = 0
-
-
-class ConfigFilePolicy(Enum):
-    """Policy to use while handling  configuration file.
-    Possible values:
-    - Override: Last file in hierarchy is the new configuration
-    - Concatenate:  Append each found configuration file content
-    - DictBased: Dictionary based configuration, value is the last found one
-    - AppendDictBased: Dictionary based, but values are imutable
-    - GitIgnoreLike: like .gitignore
-    """
-    Override = 1
-    Concatenate = 2
-    DictBased = 4
-    AppendDictBased = 8
-    GitIgnoreLike = 16
 
 
 def convert_ignore_line_to_re(item, root):

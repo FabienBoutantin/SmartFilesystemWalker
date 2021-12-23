@@ -5,7 +5,7 @@ import json
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent))
 
-import SmartFilesystemWalker  # noqa
+import SmartFilesystemWalker  # noqa: E402
 
 
 ################################################################################

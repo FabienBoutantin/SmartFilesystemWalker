@@ -268,9 +268,9 @@ def walk(
                 dirs.remove(d)
 
 
-def main():
+def no_main():
     print("This cannot be launched like a script yet")
 
 
 if __name__ == "__main__":
-    exit(main())
+    exit(no_main())

@@ -4,6 +4,12 @@ exclude_lines =
     if DEBUG:
 
     # Do not report for non module execution
-    if __name__ == "__main__": 
+    if __name__ == .__main__.:
 
+    # Do not report for non runnable code
+    def no_main()
+    if 0
+
+
+# Utilities should not be reported at all
 omit = tests/generate_git_info_for_ignorefiles.py

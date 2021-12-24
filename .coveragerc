@@ -10,6 +10,12 @@ exclude_lines =
     def no_main()
     if 0
 
+    # Do not report debugging prints for tests
+    if TESTS_HELPER_PRINT
+
+    # Do not report defensive code
+    #raise NotImplementedError
+
 
 # Utilities should not be reported at all
 omit = tests/generate_git_info_for_ignorefiles.py

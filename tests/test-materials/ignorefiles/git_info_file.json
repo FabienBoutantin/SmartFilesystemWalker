@@ -17,7 +17,11 @@
     "subdir3/fileD",
     "subdir3/subdir1.1/fileA",
     "subdir3/subdir1.1/fileB",
-    "subdir3/subdir1.1/fileD"
+    "subdir3/subdir1.1/fileD",
+    "subdir4/fileA",
+    "subdir4/fileB",
+    "subdir4/fileC",
+    "subdir4/fileD"
   ],
   "to_track": [
     ".gitignore",

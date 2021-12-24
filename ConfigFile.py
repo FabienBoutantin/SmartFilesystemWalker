@@ -49,6 +49,18 @@ def handle_config_file(base_content: Union[str, dict], new_content: Union[str, d
     {'a': 12, 'b': 15, 'c': 4}
     >>> handle_config_file({'a': 12, 'b': [12, ]}, {'b': [3, ], 'c': 4}, Policy["DictBasedAppend"])
     {'a': 12, 'b': [12, 3], 'c': 4}
+
+    # WIP: need to move code from _main.py
+    >>> handle_config_file("", "", Policy["GitIgnoreLike"])
+    Traceback (most recent call last):
+    ...
+    NotImplementedError: To Be Copied from main code
+
+    # Unknown policy will raise a TypeError
+    >>> handle_config_file("a=12", "b=3", "toto")
+    Traceback (most recent call last):
+    ...
+    ValueError: Unknown policy 'toto'
     """
     if policy == Policy["Override"]:
         return new_content
@@ -75,4 +87,4 @@ def handle_config_file(base_content: Union[str, dict], new_content: Union[str, d
         return result
     elif policy == Policy["GitIgnoreLike"]:
         raise NotImplementedError("To Be Copied from main code")
-    return base_content
+    raise ValueError(f"Unknown policy '{policy}'")

@@ -9,6 +9,13 @@ import SmartFilesystemWalker  # noqa: E402
 
 
 ################################################################################
+# Helper Vars
+
+# makes code coverage ignore debug print for tests
+TESTS_HELPER_PRINT = True
+
+
+################################################################################
 # Helper functions
 @functools.lru_cache
 def get_test_materials_dir():
@@ -39,13 +46,42 @@ def test_listing_ignore_files():
     # No .gitignore file, hence no ignored files
     assert len(ignored_files) == 0
 
+    # Using right ignore filename
     ignored_files = tuple(SmartFilesystemWalker.walk(
         get_test_materials_dir() / "ignorefiles",
         ignore_file="gitignore",
         list_ignored_only=True
     ))
-    # THere should be more than 1 ignored file
+    # There should be more than 1 ignored file
     assert len(ignored_files)
+
+    # Compare with GIT
+    ignorefiles_dir = get_test_materials_dir() / "ignorefiles"
+    git_ignore_set = set(
+        map(
+            lambda f: ignorefiles_dir / f,
+            filter(
+                lambda x: not x.endswith("gitignore"),
+                get_git_info()["ignored"]
+            )
+        )
+    )
+    first = True
+    for f in sorted(git_ignore_set.difference(ignored_files)):
+        if TESTS_HELPER_PRINT:
+            if first:
+                first = False
+                print("Files ignored by Git, but not ignored by tool:")
+            print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+    assert first
+    first = True
+    for f in sorted(set(ignored_files).difference(git_ignore_set)):
+        if TESTS_HELPER_PRINT:
+            if first:
+                first = False
+                print("Files ignored by tool, but not ignored by git:")
+            print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+    assert first
 
 
 def test_ignore_mechanism():
@@ -73,14 +109,16 @@ def test_ignore_mechanism():
 
     first = True
     for f in sorted(tool_set.intersection(git_ignore_set)):
-        if first:
-            first = False
-            print("Files ignored by Git, but reported by tool:")
-        print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+        if TESTS_HELPER_PRINT:
+            if first:
+                first = False
+                print("Files ignored by Git, but reported by tool:")
+            print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
     if not first:
-        print("Reported files by tool:")
-        for f in sorted(tool_set):
-            print(f)
+        if TESTS_HELPER_PRINT:
+            print("Reported files by tool:")
+            for f in sorted(tool_set):
+                print(f)
     assert first
 
 
@@ -108,15 +146,17 @@ def test_ignored_files():
     )
     first = True
     for f in sorted(git_to_track_set.difference(tool_set)):
-        if first:
-            first = False
-            print("Files tracked by Git, but not reported by tool:")
-        print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+        if TESTS_HELPER_PRINT:
+            if first:
+                first = False
+                print("Files tracked by Git, but not reported by tool:")
+            print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
     assert first
     first = True
     for f in sorted(tool_set.difference(git_to_track_set)):
-        if first:
-            first = False
-            print("Files reported by tool, but not tracked by git:")
-        print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
+        if TESTS_HELPER_PRINT:
+            if first:
+                first = False
+                print("Files reported by tool, but not tracked by git:")
+            print(" *", str(f).encode("utf-8", errors="replace").decode("utf-8"))
     assert first
